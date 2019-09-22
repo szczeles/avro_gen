@@ -252,7 +252,7 @@ class LogicalDatumReader(io.DatumReader):
         :param schema.Schema readers_schema: Optional reader's schema
         :param dict[str, LogicalTypeProcessor] logical_types: Optional logical types dict
         """
-        super(LogicalDatumReader, self).__init__(writers_schema=writers_schema, readers_schema=readers_schema)
+        super(LogicalDatumReader, self).__init__(writer_schema=writers_schema, reader_schema=readers_schema)
         self.logical_types = logical_types or {}
 
     def read_data(self, writers_schema, readers_schema, decoder):
@@ -282,7 +282,7 @@ class LogicalDatumWriter(io.DatumWriter):
        """
 
     def __init__(self, writers_schema=None, logical_types=DEFAULT_LOGICAL_TYPES):
-        super(LogicalDatumWriter, self).__init__(writers_schema=writers_schema)
+        super(LogicalDatumWriter, self).__init__(writer_schema=writers_schema)
         self.logical_types = logical_types
 
     def write_data(self, writers_schema, datum, encoder):
@@ -321,14 +321,14 @@ class LogicalDatumWriter(io.DatumWriter):
                     False not in
                     [self.__validate(f.type, datum.get(f.name)) for f in writers_schema.fields])
 
-        return io.validate(writers_schema, datum)
+        return io.Validate(writers_schema, datum)
 
     def write(self, datum, encoder):
         # validate datum
-        if not self.__validate(self.writers_schema, datum):
-            raise io.AvroTypeException(self.writers_schema, datum)
+        if not self.__validate(self.writer_schema, datum):
+            raise io.AvroTypeException(self.writer_schema, datum)
 
-        self.write_data(self.writers_schema, datum, encoder)
+        self.write_data(self.writer_schema, datum, encoder)
 
 
 def patch_logical_types():
